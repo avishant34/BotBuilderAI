@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: botbuilderai-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    profiles: ["redis"]   # only starts if you use --profile redis
+
+  bot:
+    build: .
+    container_name: botbuilderai
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./generated:/app/generated
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./data/bot_generator.db
+    # Uncomment + set USE_REDIS=true if using redis profile
+    # depends_on:
+    #   - redis
+
+volumes:
+  redis_data:
